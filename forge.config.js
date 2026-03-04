@@ -28,10 +28,6 @@ module.exports = {
       name: '@electron-forge/maker-dmg',
       platforms: ['darwin'],
       config: {}
-    },
-    {
-      name: '@forkprince/electron-forge-maker-appimage',
-      platforms: ['linux']
     }
   ],
 
