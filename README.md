@@ -509,6 +509,8 @@ hypercore-sign-generate-keys
 
 Take note of the public key.
 
+The public key is stored in `~/.hypercore-sign/default.public`.
+
 #### 7b. Create Multisig Config
 
 Set the public keys of each signer on `publicKey` and use the key of the provision link as the `srcKey`:
