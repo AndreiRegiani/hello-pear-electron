@@ -38,7 +38,7 @@ if (process.env.MAC_CODESIGN_IDENTITY) {
     osxNotarize: {
       appleId: process.env.APPLE_ID,
       appleIdPassword: process.env.APPLE_PASSWORD,
-      teamId: process.env.TEAM_ID
+      teamId: process.env.APPLE_TEAM_ID
     }
   }
 }
