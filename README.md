@@ -2,7 +2,7 @@
 
 > Pear Hello World for Electron with `pear-runtime`
 
-Quick start boilerplate for embededding [pear-runtime](https://github.com/holepunchto/pear-runtime) into Electron.
+Quick start boilerplate for embedding [pear-runtime](https://github.com/holepunchto/pear-runtime) into Electron.
 
 ## MVP - EXPERIMENTAL
 
@@ -10,7 +10,7 @@ This boilerplate is MVP and Experimental.
 
 ## OS Support
 
-- MacOS
+- macOS
 - Linux - Work in Progress
 - Windows - Work in Progress
 
@@ -178,7 +178,7 @@ The `workers/main.js` would then be executed with an embedded Bare runtime.
 
 The other side of the IPC stream can be accessed inside the worker as `Bare.IPC`.
 
-Note how `pear.storage` is passed in as a the first arguments, this can be accessed via `Bare.argv[2]`.
+Note how `pear.storage` is passed in as the first argument, this can be accessed via `Bare.argv[2]`.
 
 ```js
 const Corestore = require('corestore')
@@ -292,7 +292,7 @@ npm version patch
 - `build/icon.ico` is per brand
 - `build/icon.icon.png` is per brand
 
-##### MacOS
+##### macOS
 
 For development or internal usage:
 
@@ -300,9 +300,9 @@ For development or internal usage:
 npm run make
 ```
 
-Production MacOS apps must be vendor signed and notarized.
+Production macOS apps must be vendor signed and notarized.
 
-NOTE: If using pear <= v2.2.15 then `{ "pear": {"stage": {"includes": [".github"] } } }` must be assed to the project `package.json`, otherwise stray .github folders in the dependency tree are stripped during stage and the notarized build will fail to run due to lack of signature verification caused by pear <= v2.2.15 pruning these folders during stage.
+NOTE: If using pear <= v2.2.15 then `{ "pear": {"stage": {"includes": [".github"] } } }` must be added to the project `package.json`, otherwise stray .github folders in the dependency tree are stripped during stage and the notarized build will fail to run due to lack of signature verification caused by pear <= v2.2.15 pruning these folders during stage.
 
 Supply signing and notarizing keys with `MAC_CODESIGN_IDENTITY`, `APPLE_TEAM_ID`, `APPLE_ID`, `APPLE_PASSWORD`
 
@@ -336,10 +336,10 @@ Use [`pear-build`](https://npm.im/pear-build) to move all the `package.json` and
 From above the project root run `pear-build` for each arch, for example Mac x64 + arm64, Linux x64 + arm64 and Windows x64 would be:
 
 ```sh
-pear-build --package=./hello-pear-electron/package.json --darwin-arm64-app ./hello-pear-electron/out/HelloPear-darwin-arm64/HelloPear.app --darwin-x64-app ./hello-pear-electron/out/HelloPear-darwin-x64/HelloPear.app --linux-arm64-app ./hello-pear-electron/out/HelloPear-linux-arm64/HelloPear.AppImage --linux-x64-app ./hello-pear-electron/out/HelloPear-darwin-x64/HelloPear.AppImage --win32-x64-app ./hello-pear-electron/out/HelloPear-win32-x64/HelloPear.exe --target hello-pear-electron-1.0.0
+pear-build --package=./hello-pear-electron/package.json --darwin-arm64-app ./hello-pear-electron/out/HelloPear-darwin-arm64/HelloPear.app --darwin-x64-app ./hello-pear-electron/out/HelloPear-darwin-x64/HelloPear.app --linux-arm64-app ./hello-pear-electron/out/HelloPear-linux-arm64/HelloPear.AppImage --linux-x64-app ./hello-pear-electron/out/HelloPear-linux-x64/HelloPear.AppImage --win32-x64-app ./hello-pear-electron/out/HelloPear-win32-x64/HelloPear.exe --target hello-pear-electron-1.0.0
 ```
 
-If the `--target` flag is ommited, then target folder is in the current working directory named `{name}-{version}` per `package.json` fields.
+If the `--target` flag is omitted, then target folder is in the current working directory named `{name}-{version}` per `package.json` fields.
 
 Once the `<target>/by-arch` folder is hydrated with builds for all required target architectures it's ready to move on to be staged, provisioned and multisigned.
 
@@ -711,7 +711,7 @@ npm start -- --storage /tmp/custom/storage
 
 For application builds, an additional instance can be run with the following per OS.
 
-#### MacOS
+#### macOS
 
 ```sh
 open -n <name>.app --args --storage /tmp/custom/storage
