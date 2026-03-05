@@ -522,6 +522,7 @@ Set the public keys of each signer on `publicKey` and use the key of the provisi
 
 ```json
 {
+  "type": "drive",
   "publicKeys": ["pubkey-signer-1", "pubkey-signer-2", "pubkey-signer-3"],
   "namespace": "hello-pear-electron",
   "quorum": 2,
@@ -637,19 +638,7 @@ It need not be a signer who commits as the request and the responses suffice to 
 
 Note: starting from the second commit, it is technically possible to corrupt the production build. So if a command ever errors with an `INCOMPATIBLE_SOURCE_AND_TARGET` error, never try to work around it, the only safe way to proceed is by creating reseeding the provision on other peers.
 
-### Build Lines
-
-Create a build that points to the stage link and a build that points to the provision link.
-
-- [1. Set upgrade link](#1-set-upgrade-link)
-- [3. Make Distributables](#3-make-distributables)
-- [4. Build Deploy Directory](#4-build-deploy-directory)
-
-Share the stage build with developer collaborators.
-
-Share the provision build with stakeholders, especially signers.
-
-Any updates to the stage or provision links will then update in the dedicated application builds.
+## Convention
 
 ### Delivery Pipeline
 
@@ -676,18 +665,7 @@ Once stakeholders, QA, dogfooder devs and any one else relevant has confirmed st
 - [7e. Verify](#7e-verify)
 - [7f. Commit](#7f-commit)
 
-### Custom builds
-
-The `upgrade` field can be set to one link only. Share alternative builds internally peer-to-peer by forking, creating a custom stage link, seeding, building and sharing custom staged builds with developer collaborators.
-
-- [0. Touch and Seed](#0-touch-and-seed)
-- [1. Set upgrade link](#1-set-upgrade-link)
-- [2. Version](#2-version)
-- [3. Make Distributables](#3-make-distributables)
-- [4. Build Deploy Directory](#4-build-deploy-directory)
-- [5. Stage](#5-stage)
-
-### Internal Lines
+### Release Lines
 
 Depending on team scale, it can be worth having three stage drives, one provision drive and one multisig drive
 
@@ -699,8 +677,34 @@ Depending on team scale, it can be worth having three stage drives, one provisio
 
 For each of these lines:
 
+- [0. Touch and Seed](#0-touch-and-seed)
 - [1. Set upgrade link](#1-set-upgrade-link)
 - [3. Make Distributables](#3-make-distributables)
+
+### Making Builds for Release Lines
+
+Create a build that points to the each link for each release line.
+
+- [1. Set upgrade link](#1-set-upgrade-link)
+- [3. Make Distributables](#3-make-distributables)
+- [4. Build Deploy Directory](#4-build-deploy-directory)
+
+Share the stage build with developer collaborators.
+
+Share the provision build with stakeholders, especially signers.
+
+Any updates to the stage or provision links will then update in the dedicated application builds.
+
+### Custom Builds
+
+The `upgrade` field can be set to one link only. Share alternative builds internally peer-to-peer by forking, creating a custom stage link, seeding, building and sharing custom staged builds with developer collaborators.
+
+- [0. Touch and Seed](#0-touch-and-seed)
+- [1. Set upgrade link](#1-set-upgrade-link)
+- [2. Version](#2-version)
+- [3. Make Distributables](#3-make-distributables)
+- [4. Build Deploy Directory](#4-build-deploy-directory)
+- [5. Stage](#5-stage)
 
 ### Runtime Update Flow
 
