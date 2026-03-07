@@ -45,12 +45,18 @@ End-to-end boilerplate for embedding [pear-runtime][pear-runtime] into [Electron
 
 ## Terminology <a name="terminology"></a>
 
-- P2P - Peer-to-Peer
-- OTA - Over-the-Air
-- application drive - the [Hyperdrive][hyperdrive] behind a Pear application
-- deployment folder - the build directory as output by `pear-build` which is then staged
-- pear link - a [link format][pear-link-format] for self-describing peer-to-peer links
-- versioned link - a pear link of the form `pear://<fork>.<length>.<key>` where fork, length and key correspond to [core.fork][hypercore-fork], [core.length][hypercore-length], and [core.key][hypercore-key] of the [Hypercore][hypercore] behind the [Hyperdrive][hyperdrive] behind the Pear application
+- **OTA** - Over-the-Air. Data delivery without manual intervention
+- **OTA Updates** - Direct software updates to running applications without manual reinstallation
+- **P2P** - Peer-to-Peer. Direct point-to-point communication between machines/devices without central servers
+- **application drive** - the [Hyperdrive][hyperdrive] behind a Pear application
+- **deployment folder** - the build directory output by `pear-build` which is then staged
+- **multisig** - co-signing protocol requiring a quorum of signers before writes can be committed. This makes project integrity cryptographically bound to collective sign-off
+- **pear link** - a [link format][pear-link-format] for addressing peer-to-peer applications
+- **quorum** - the minimum number of signers needed to commit a multisig write
+- **release lines** - parallel deployment streams at different stability levels
+- **seeding** - exposing an application drive to peers for discovery, download and updates
+- **vendor signing** - signing distributables with OS-level certificates so they run on other machines without quarantine e.g. Apple notarization, Windows code signing
+- **versioned link** - a pear link of the form `pear://<fork>.<length>.<key>` where fork, length and key correspond to [core.fork][hypercore-fork], [core.length][hypercore-length], and [core.key][hypercore-key] of the [Hypercore][hypercore] behind the [Hyperdrive][hyperdrive] behind the Pear application
 
 ## Development <a name="development"></a>
 
