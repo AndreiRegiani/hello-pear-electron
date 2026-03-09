@@ -713,7 +713,7 @@ A multisig'd application drive is recommended for serious production deployment.
 
 A quorum is the number of signers needed to release a build.
 
-Requiring a quorum of signers before a release can go out distributes production risk.
+Requiring a quorum of signers before release distributes production risk.
 
 A malicious build cannot be published without multiple signers being compromised, enough signers to establish quorum.
 
