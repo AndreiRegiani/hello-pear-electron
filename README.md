@@ -756,7 +756,7 @@ Once a Multisig Drive has been setup the release flow is:
 
 ```mermaid
 graph TD
-    Prov[Source Drive] --> Req[7d. Prepare Request]
+    Prov[Provisioned Drive] --> Req[7d. Prepare Request]
     Req -->|signing request| S1[Signer 1 ✓]
     Req -->|signing request| S2[Signer N ✓]
     Req -->|signing request| S3[Signer ...]
