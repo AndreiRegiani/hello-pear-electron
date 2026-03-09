@@ -217,7 +217,7 @@ Install with:
 npx pear
 ```
 
-Centralized deployments tend to have at minimum a staging server for internal checks, a preview server for stakholders and a production server for users.
+Centralized deployments tend to have at minimum a staging server for internal checks, a preview server for stakeholders and a production server for users.
 
 Application builds are written to [pear:// links][pear-link-format] through three operations stage, provision and multisig — these are used to create successive layers of deployment with increasing trust guarantees:
 
