@@ -232,7 +232,7 @@ graph LR
     S[Stage] --> P[Provision] --> M[Multisig]
 ```
 
-This approach enables rapid collaborative iteration on Stage links, a stakeholder preview with Provisioned links, and cryptographically signed-off machine-independent production releases with Multisigged links.
+This approach enables rapid collaborative iteration on Stage links, a stakeholder preview with Provisioned links, and cryptographically signed-off machine-independent production releases with multisig'd links.
 
 ### Deployment Layers
 
