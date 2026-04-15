@@ -100,6 +100,32 @@ jobs:
           macos_apple_password: ${{ secrets.APPLE_PASSWORD }}
           macos_apple_team_id: ${{ secrets.APPLE_TEAM_ID }}
 
+  build-macos-x64:
+    permissions:
+      contents: write # to upload artifacts
+      packages: read
+    runs-on: macos-26-intel
+    environment: release
+    outputs:
+      artifact-links: ${{ steps.build.outputs.artifact-links }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: holepunchto/actions/make-pear-app@v1
+        id: build
+        with:
+          channel: ${{ env.CHANNEL }}
+          upgrade_key: >-
+            ${{ github.event.inputs['upgrade-key']
+              || (env.CHANNEL == 'nightly' && secrets.NIGHTLY_KEY)
+              || (env.CHANNEL == 'internal' && secrets.INTERNAL_KEY) }}
+          macos_certificate_base64: ${{ secrets.CERTIFICATE_P12 }}
+          macos_p12_password: ${{ secrets.CERTIFICATE_PASSWORD }}
+          macos_codesign_identity: ${{ secrets.MAC_CODESIGN_IDENTITY }}
+          macos_notarization_method: apple_id_password
+          macos_apple_id: ${{ secrets.APPLE_ID }}
+          macos_apple_password: ${{ secrets.APPLE_PASSWORD }}
+          macos_apple_team_id: ${{ secrets.APPLE_TEAM_ID }}
+
   build-win32:
     permissions:
       contents: write # to upload artifacts
@@ -121,13 +147,14 @@ jobs:
           windows_cert_sha1: E890AF027C9C83F7427BCEEBE7AC533579DFE549
 
   stage:
-    needs: [build-linux-x64, build-linux-arm, build-macos, build-win32]
+    needs: [build-linux-x64, build-linux-arm, build-macos, build-macos-x64, build-win32]
     if: >-
       ${{ !cancelled()
         && (inputs.run-stage == true || github.event.inputs['run-stage'] == 'true')
         && needs.build-linux-x64.result == 'success'
         && needs.build-linux-arm.result == 'success'
         && needs.build-macos.result == 'success'
+        && needs.build-macos-x64.result == 'success'
         && needs.build-win32.result == 'success' }}
     runs-on: macos-latest
     environment: release
