@@ -56,19 +56,19 @@ End-to-end boilerplate for embedding [pear-runtime][pear-runtime] into [Electron
 
 Create an environment (Settings -> Environments) named `release`. The workflows use these secrets:
 
-| Secret | Platform |
-| ------ | -------- |
-| `CERTIFICATE_P12` | `darwin` |
-| `CERTIFICATE_PASSWORD` | `darwin` |
+| Secret                  | Platform |
+| ----------------------- | -------- |
+| `CERTIFICATE_P12`       | `darwin` |
+| `CERTIFICATE_PASSWORD`  | `darwin` |
 | `MAC_CODESIGN_IDENTITY` | `darwin` |
-| `APPLE_ID` | `darwin` |
-| `APPLE_PASSWORD` | `darwin` |
-| `APPLE_TEAM_ID` | `darwin` |
-| `WINDOWS_CERT_SHA1` | `win32` |
-| `PEAR_PRIMARY_KEY` | *all* |
-| `MULTISIG_QUORUM` | *all* |
-| `MULTISIG_NAMESPACE` | *all* |
-| `MULTISIG_PUBKEYS` | *all* |
+| `APPLE_ID`              | `darwin` |
+| `APPLE_PASSWORD`        | `darwin` |
+| `APPLE_TEAM_ID`         | `darwin` |
+| `WINDOWS_CERT_SHA1`     | `win32`  |
+| `PEAR_PRIMARY_KEY`      | _all_    |
+| `MULTISIG_QUORUM`       | _all_    |
+| `MULTISIG_NAMESPACE`    | _all_    |
+| `MULTISIG_PUBKEYS`      | _all_    |
 
 ## Terminology <a name="terminology"></a>
 
