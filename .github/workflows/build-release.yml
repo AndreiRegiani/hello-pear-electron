@@ -22,6 +22,7 @@ on:
 
 jobs:
   build-linux-x64:
+    timeout-minutes: 20
     permissions:
       contents: write # to upload artifacts
       packages: read
@@ -38,6 +39,7 @@ jobs:
           upgrade_key: ${{ inputs['upgrade-key'] || github.event.inputs['upgrade-key'] }}
 
   build-linux-arm:
+    timeout-minutes: 20
     permissions:
       contents: write # to upload artifacts
       packages: read
@@ -54,6 +56,7 @@ jobs:
           upgrade_key: ${{ inputs['upgrade-key'] || github.event.inputs['upgrade-key'] }}
 
   build-macos:
+    timeout-minutes: 20
     permissions:
       contents: write # to upload artifacts
       packages: read
@@ -77,6 +80,7 @@ jobs:
           macos_apple_team_id: ${{ secrets.APPLE_TEAM_ID }}
 
   build-macos-x64:
+    timeout-minutes: 20
     permissions:
       contents: write # to upload artifacts
       packages: read
@@ -100,6 +104,7 @@ jobs:
           macos_apple_team_id: ${{ secrets.APPLE_TEAM_ID }}
 
   build-win32:
+    timeout-minutes: 20
     permissions:
       contents: write # to upload artifacts
       packages: read
@@ -117,6 +122,7 @@ jobs:
           windows_cert_sha1: ${{ secrets.WINDOWS_CERT_SHA1 }}
 
   stage:
+    timeout-minutes: 120
     needs: [build-linux-x64, build-linux-arm, build-macos, build-macos-x64, build-win32]
     if: >-
       ${{ !cancelled()
