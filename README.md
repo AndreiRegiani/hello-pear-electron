@@ -65,10 +65,6 @@ Create an environment (Settings -> Environments) named `release`. The workflows 
 | `APPLE_PASSWORD`        | `darwin` |
 | `APPLE_TEAM_ID`         | `darwin` |
 | `WINDOWS_CERT_SHA1`     | `win32`  |
-| `PEAR_PRIMARY_KEY`      | _all_    |
-| `MULTISIG_QUORUM`       | _all_    |
-| `MULTISIG_NAMESPACE`    | _all_    |
-| `MULTISIG_PUBKEYS`      | _all_    |
 
 ## Terminology <a name="terminology"></a>
 
