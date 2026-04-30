@@ -72,9 +72,9 @@ EOF
 )
 
 MIME_TYPES=$(jq -r '
-  (.build?.protocols // .protocols // []) 
-  | map(.schemes[]) 
-  | map("x-scheme-handler/" + ascii_downcase) 
+  (.build?.protocols // .protocols // [])
+  | map(.schemes[])
+  | map("x-scheme-handler/" + ascii_downcase)
   | join(";")
 ' "$PKG")
 
