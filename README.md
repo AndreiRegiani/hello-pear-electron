@@ -477,7 +477,7 @@ npm version patch
 For local development only:
 
 ```sh
-npm run make
+npm run make:darwin
 ```
 
 macOS apps that aren't signed and notarized won't run on other machines because they will be quarantined by the OS. For OTA updates to work on other machines, macOS apps must be vendor signed and notarized.
@@ -487,7 +487,7 @@ NOTE: If using pear <= v2.2.15 then `{ "pear": {"stage": {"includes": [".github"
 Supply signing and notarizing keys with `MAC_CODESIGN_IDENTITY`, `APPLE_TEAM_ID`, `APPLE_ID`, `APPLE_PASSWORD`
 
 ```sh
-MAC_CODESIGN_IDENTITY=identity APPLE_TEAM_ID=teamid APPLE_ID=id APPLE_PASSWORD=pw npm run make
+MAC_CODESIGN_IDENTITY=identity APPLE_TEAM_ID=teamid APPLE_ID=id APPLE_PASSWORD=pw npm run make:darwin
 ```
 
 Instructions for obtaining credentials can be found [here][electron-forge-macos-signing]
@@ -510,7 +510,7 @@ Requires [Windows SDK][windows-sdk] (the build auto-detects the installed versio
 Without signing credentials, a self-signed development certificate is automatically generated matching the `Publisher` in `AppxManifest.xml`. This certificate is cached in the local certificate store and reused across builds on the same machine, but is not portable — building on a different machine or clearing the cert store generates a new one.
 
 ```sh
-npm run make
+npm run make:win32
 ```
 
 Edit `build/AppxManifest.xml` and ensure name, publisher, description, and executable path are correct throughout - some of these are declared in multiple locations.
@@ -520,7 +520,7 @@ Install with `Add-AppxPackage .\out\HelloPear-win32-x64\HelloPear.msix`, uninsta
 Production Windows apps must be signed with a code signing certificate. The `Publisher` field in `build/AppxManifest.xml` must match the `CN` of the signing certificate. Supply a `.pfx` certificate file and password with `WINDOWS_CERTIFICATE_FILE` and `WINDOWS_CERTIFICATE_PASSWORD`:
 
 ```sh
-WINDOWS_CERTIFICATE_FILE=path/to/cert.pfx WINDOWS_CERTIFICATE_PASSWORD=password npm run make
+WINDOWS_CERTIFICATE_FILE=path/to/cert.pfx WINDOWS_CERTIFICATE_PASSWORD=password npm run make:win32
 ```
 
 For OTA updates, the same certificate must be used across builds — Windows rejects updates where the `Publisher` doesn't match the installed package. Create a persistent code signing certificate following [Microsoft's MSIX signing guide][msix-signing-guide], or use a production certificate.
@@ -530,7 +530,7 @@ For OTA updates, the same certificate must be used across builds — Windows rej
 Build distributables with:
 
 ```sh
-npm run make
+npm run make:linux
 ```
 
 #### 4. Build Deployment Directory <a name="build-deploy-directory"></a>
@@ -1070,15 +1070,39 @@ Runs: `electron-forge package`
 
 ---
 
-### `npm run make` <a name="script-make"></a>
+### `npm run make:linux` <a name="script-make-linux"></a>
 
-Create distributables for the current platform.
+Create distributables on Linux.
 
 ```sh
-npm run make
+npm run make:linux
 ```
 
-Runs: `electron-forge make`
+Runs: `electron-forge package && ./scripts/build-app-image.sh`
+
+---
+
+### `npm run make:darwin` <a name="script-make-darwin"></a>
+
+Create distributables on macOS.
+
+```sh
+npm run make:darwin
+```
+
+Runs: `electron-forge make --platform=darwin`
+
+---
+
+### `npm run make:win32` <a name="script-make-win32"></a>
+
+Create distributables on Windows.
+
+```sh
+npm run make:win32
+```
+
+Runs: `electron-forge make --platform=win32`
 
 ---
 
