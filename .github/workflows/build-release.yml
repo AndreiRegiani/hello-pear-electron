@@ -265,15 +265,20 @@ jobs:
 
           darwin_arm64_app="$(find "$extract_dir" -path "*darwin-arm64*" -name "$app_name.app" -type d -print -quit)"
           darwin_x64_app="$(find "$extract_dir" -path "*darwin-x64*" -name "$app_name.app" -type d -print -quit)"
-          linux_arm64_app="$(find "$extract_dir" -path "*linux-arm64*" -name "$app_name.AppImage" -type f -print -quit)"
-          linux_x64_app="$(find "$extract_dir" -path "*linux-x64*" -name "$app_name.AppImage" -type f -print -quit)"
+          linux_arm64_src="$(find "$extract_dir" -path "*linux-arm64*" -name "$app_name*.AppImage" -type f -print -quit)"
+          linux_x64_src="$(find "$extract_dir" -path "*linux-x64*" -name "$app_name*.AppImage" -type f -print -quit)"
           win32_x64_app="$(find "$extract_dir" -path "*win32-x64*" -name "$app_name.msix" -type f -print -quit)"
 
-          if [[ -z "$darwin_arm64_app" || -z "$darwin_x64_app" || -z "$linux_arm64_app" || -z "$linux_x64_app" || -z "$win32_x64_app" ]]; then
+          if [[ -z "$darwin_arm64_app" || -z "$darwin_x64_app" || -z "$linux_arm64_src" || -z "$linux_x64_src" || -z "$win32_x64_app" ]]; then
             echo "Missing one or more Pear build artifacts" >&2
             find "$extract_dir" -maxdepth 6 -print | sort >&2
             exit 1
           fi
+
+          linux_arm64_app="$extract_dir/pear-linux-arm64-app/$app_name.AppImage"
+          linux_x64_app="$extract_dir/pear-linux-x64-app/$app_name.AppImage"
+          if [[ "$linux_arm64_src" != "$linux_arm64_app" ]]; then cp "$linux_arm64_src" "$linux_arm64_app"; fi
+          if [[ "$linux_x64_src" != "$linux_x64_app" ]]; then cp "$linux_x64_src" "$linux_x64_app"; fi
 
           rm -rf "$STAGE_TARGET"
           pear-build \
