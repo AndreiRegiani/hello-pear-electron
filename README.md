@@ -1038,7 +1038,6 @@ Keep using the same value for future staged builds. The primary key is used by t
 
 3. Run `Build Release` with the intended `channel`, the matching `upgrade-key`, and `run-stage-multisig: true`.
    In the same workflow run:
-
    - CI builds all OS distributables.
    - CI downloads those artifacts into `out/artifacts`.
    - CI assembles `out/stage` from the downloaded artifacts with `pear-build`.
