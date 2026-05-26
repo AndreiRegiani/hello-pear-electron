@@ -1036,7 +1036,18 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 Keep using the same value for future staged builds. The primary key is used by the CI staging tools when opening the snapshot and staging drive.
 
-3. Run `Build Release` with the intended `channel`, the matching `upgrade-key`, and `run-stage-multisig: true`.
+3. In `Settings -> Actions -> General -> Workflow permissions`, select `Read and write permissions` and enable `Allow GitHub Actions to create and approve pull requests`.
+   The stage job uses `GITHUB_TOKEN` to open the `.github/ci/snapshot.json` update PR.
+
+4. For local multisig CLI commands, put the same multisig values in `pear.json` and compute the multisig link:
+
+```sh
+pear multisig link --config ./pear.json
+```
+
+Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets.
+
+5. Run `Build Release` with the intended `channel`, the matching `upgrade-key`, and `run-stage-multisig: true`.
    In the same workflow run:
    - CI builds all OS distributables.
    - CI downloads those artifacts into `out/artifacts`.
@@ -1047,13 +1058,13 @@ Keep using the same value for future staged builds. The primary key is used by t
    - CI runs `pear-ci-multisig request`.
    - CI prints the multisig request and `pear multisig sign <request>` command in the `Multisig Request` summary section.
 
-4. Merge the automated `.github/ci/snapshot.json` PR before the next staged build.
+6. Merge the automated `.github/ci/snapshot.json` PR before the next staged build.
    The snapshot lets future CI runs reopen the staged drive state before appending the next version.
 
-5. Keep the staged source drive seeded by release infrastructure.
+7. Keep the staged source drive seeded by release infrastructure.
    `pear-stage-next` waits for remote peers to sync before it finishes, and `pear-ci-multisig request` validates that the source is sufficiently seeded before creating the request.
 
-6. Each signer runs:
+8. Each signer runs:
 
 ```sh
 pear multisig sign <request>
