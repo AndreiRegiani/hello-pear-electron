@@ -81,6 +81,33 @@ module.exports = {
           { file: 'build/icon/icon-256x256.png', size: 256 }
         ]
       }
+    },
+    {
+      name: 'pear-electron-forge-maker-flatpak',
+      platforms: ['linux'],
+      config: {
+        appId: 'com.pears.HelloPear',
+        icon: `${packagerConfig.icon}.png`,
+        metainfo: 'build/metainfo.xml',
+        entrypoint: 'build/entrypoint.sh',
+        comment: 'Integrating Pear into a hello world electron desktop app',
+        categories: ['Development']
+      }
+    },
+    {
+      name: 'pear-electron-forge-maker-snap',
+      platforms: ['linux'],
+      config: {
+        snapcraftYamlPath: 'build/snapcraft.yaml',
+        summary: 'Integrating Pear into a hello world electron desktop app',
+        description:
+          'End-to-end boilerplate for embedding pear-runtime into Electron apps and deploying peer-to-peer application updates.',
+        contact: 'hello@holepunchto.to',
+        license: 'Apache-2.0',
+        issues: 'https://github.com/holepunchto/hello-pear-electron/issues',
+        website: 'https://github.com/holepunchto/hello-pear-electron',
+        icon: `${packagerConfig.icon}.png`
+      }
     }
   ],
 
