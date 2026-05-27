@@ -1045,7 +1045,7 @@ Keep using the same value for future staged builds. The primary key is used by t
 pear multisig link --config ./pear.json
 ```
 
-Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets.
+Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets. This multisig `upgrade-key` is the target release link, not the temporary staged source drive that CI seeds during the stage job.
 
 5. Run `Build Release` with the intended `channel`, the matching `upgrade-key`, and `run-stage-multisig: true`.
    In the same workflow run:
@@ -1053,16 +1053,23 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - CI downloads those artifacts into `out/artifacts`.
    - CI assembles `out/stage` from the downloaded artifacts with `pear-build`.
    - CI stages `out/stage` into the channel drive.
+   - CI prints `Seeding <key>` after staging, then waits until a remote peer has synced the staged source drive.
    - CI closes `.github/ci/snapshot.json`.
    - CI opens a snapshot update PR and prints the manual git commit command in the job summary.
    - CI runs `pear-ci-multisig request`.
    - CI prints the multisig request and `pear multisig sign <request>` command in the `Multisig Request` summary section.
 
-6. Merge the automated `.github/ci/snapshot.json` PR before the next staged build.
-   The snapshot lets future CI runs reopen the staged drive state before appending the next version.
+6. Keep the staged source drive seeded by release infrastructure.
+   For a manual CI test, copy the `pear seed ...` command from the `Stage Source` job summary, or seed the key from the stage job log line:
 
-7. Keep the staged source drive seeded by release infrastructure.
-   `pear-stage-next` waits for remote peers to sync before it finishes, and `pear-ci-multisig request` validates that the source is sufficiently seeded before creating the request.
+   ```sh
+   pear seed pear://<key>
+   ```
+
+   This staged source drive is different from the multisig `upgrade-key`.
+
+7. Merge the automated `.github/ci/snapshot.json` PR before the next staged build.
+   The snapshot lets future CI runs reopen the staged drive state before appending the next version.
 
 8. Each signer runs:
 
