@@ -1017,16 +1017,16 @@ Create a GitHub environment (Settings -> Environments) named `release`. Run the 
 The `Build Release` workflow can stage a completed build and create a multisig signing request in the same run.
 
 1. Use the `release` GitHub environment.
-   The workflow `channel` input still selects the Pear channel, e.g. `internal` or `production`.
+   This repository's release workflow stages the `production` Pear channel.
 
 2. Add these environment secrets to the `release` environment:
 
-| Secret               | Notes                                                              |
-| -------------------- | ------------------------------------------------------------------ |
-| `PEAR_PRIMARY_KEY`   | Hex-encoded primary key used by CI to stage into the channel drive |
-| `MULTISIG_QUORUM`    | Required signature count, e.g. `2`                                 |
-| `MULTISIG_PUBKEYS`   | Space-separated signer public keys                                 |
-| `MULTISIG_NAMESPACE` | Multisig namespace, e.g. `holepunchto/hello-pear-electron`         |
+| Secret               | Notes                                                                 |
+| -------------------- | --------------------------------------------------------------------- |
+| `PEAR_PRIMARY_KEY`   | Hex-encoded primary key used by CI to stage into the production drive |
+| `MULTISIG_QUORUM`    | Required signature count, e.g. `2`                                    |
+| `MULTISIG_PUBKEYS`   | Space-separated signer public keys                                    |
+| `MULTISIG_NAMESPACE` | Multisig namespace, e.g. `holepunchto/hello-pear-electron`            |
 
 Generate `PEAR_PRIMARY_KEY` once and save it as a `release` environment secret:
 
@@ -1048,7 +1048,6 @@ pear multisig link --config ./pear.json
 Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets. This multisig `upgrade-key` is the target release link, not the temporary staged source drive that CI seeds during the stage job.
 
 5. Run `Build Release` with:
-   - `channel`: the Pear channel to stage, e.g. `internal` or `production`
    - `upgrade-key`: the `pear://...` link from `pear multisig link --config ./pear.json`
    - `run-stage-multisig`: `true`
 
@@ -1056,7 +1055,7 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - CI builds all OS distributables.
    - CI downloads those artifacts into `out/artifacts`.
    - CI assembles `out/stage` from the downloaded artifacts with `pear-build`.
-   - CI stages `out/stage` into the channel drive.
+   - CI stages `out/stage` into the production drive.
    - CI prints `Seeding <key>` after staging, then waits until a remote peer has synced the staged source drive.
    - CI closes `.github/ci/snapshot.json`.
    - CI opens a snapshot update PR and prints the manual git commit command in the job summary.
