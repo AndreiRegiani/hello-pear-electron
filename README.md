@@ -1047,7 +1047,11 @@ pear multisig link --config ./pear.json
 
 Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets. This multisig `upgrade-key` is the target release link, not the temporary staged source drive that CI seeds during the stage job.
 
-5. Run `Build Release` with the intended `channel`, the matching `upgrade-key`, and `run-stage-multisig: true`.
+5. Run `Build Release` with:
+   - `channel`: the Pear channel to stage, e.g. `internal` or `production`
+   - `upgrade-key`: the `pear://...` link from `pear multisig link --config ./pear.json`
+   - `run-stage-multisig`: `true`
+
    In the same workflow run:
    - CI builds all OS distributables.
    - CI downloads those artifacts into `out/artifacts`.
@@ -1059,14 +1063,14 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - CI runs `pear-ci-multisig request`.
    - CI prints the multisig request and `pear multisig sign <request>` command in the `Multisig Request` summary section.
 
-6. Keep the staged source drive seeded by release infrastructure.
-   For a manual CI test, copy the `pear seed ...` command from the `Stage Source` job summary, or seed the key from the stage job log line:
+6. Keep the staged source drive well seeded.
+   Find the staged source key in the CI output, printed as `Seeding <key>`, and seed it:
 
    ```sh
    pear seed pear://<key>
    ```
 
-   This staged source drive is different from the multisig `upgrade-key`.
+   The staged source drive is where CI uploads this build; the multisig `upgrade-key` is the release target that signers approve.
 
 7. Merge the automated `.github/ci/snapshot.json` PR before the next staged build.
    The snapshot lets future CI runs reopen the staged drive state before appending the next version.
