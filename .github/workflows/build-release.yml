@@ -304,10 +304,28 @@ jobs:
 
       - name: Stage next
         id: stage
+        timeout-minutes: 60
         env:
           PEAR_PRIMARY_KEY: ${{ secrets.PEAR_PRIMARY_KEY }}
         run: |
           set -euo pipefail
+
+          source_link="$(pear-stage-next \
+            --storage="$STAGE_STORAGE" \
+            --primary-key="$PEAR_PRIMARY_KEY" \
+            --name="$STAGE_NAME" \
+            --touch)"
+
+          {
+            echo "### Stage Source"
+            echo
+            echo "Be sure this drive is well seeded:"
+            echo
+            echo "\`pear seed $source_link\`"
+            echo
+            echo "Source link: \`$source_link\`"
+            echo
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
           pear-stage-next \
             --storage="$STAGE_STORAGE" \
