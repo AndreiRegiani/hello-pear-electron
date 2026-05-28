@@ -1017,16 +1017,16 @@ Create a GitHub environment (Settings -> Environments) named `release`. Run the 
 The `Build Release` workflow can stage a completed build and create a multisig signing request in the same run.
 
 1. Use the `release` GitHub environment.
-   The workflow `channel` input still selects the Pear channel, e.g. `internal` or `production`.
+   This repository stages the `production` Pear channel.
 
 2. Add these environment secrets to the `release` environment:
 
-| Secret               | Notes                                                              |
-| -------------------- | ------------------------------------------------------------------ |
-| `PEAR_PRIMARY_KEY`   | Hex-encoded primary key used by CI to stage into the channel drive |
-| `MULTISIG_QUORUM`    | Required signature count, e.g. `2`                                 |
-| `MULTISIG_PUBKEYS`   | Space-separated signer public keys                                 |
-| `MULTISIG_NAMESPACE` | Multisig namespace, e.g. `holepunchto/hello-pear-electron`         |
+| Secret               | Notes                                                        |
+| -------------------- | ------------------------------------------------------------ |
+| `PEAR_PRIMARY_KEY`   | Hex-encoded primary key for the CI-owned staged source drive |
+| `MULTISIG_QUORUM`    | Required signature count, e.g. `2`                           |
+| `MULTISIG_PUBKEYS`   | Space-separated signer public keys                           |
+| `MULTISIG_NAMESPACE` | Multisig namespace, e.g. `holepunchto/hello-pear-electron`   |
 
 Generate `PEAR_PRIMARY_KEY` once and save it as a `release` environment secret:
 
@@ -1034,44 +1034,53 @@ Generate `PEAR_PRIMARY_KEY` once and save it as a `release` environment secret:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Keep using the same value for future staged builds. The primary key is used by the CI staging tools when opening the snapshot and staging drive.
+Keep using the same value for future staged builds. This is the write key used to reopen the snapshot and append the next staged build.
 
 3. In `Settings -> Actions -> General -> Workflow permissions`, select `Read and write permissions` and enable `Allow GitHub Actions to create and approve pull requests`.
    The stage job uses `GITHUB_TOKEN` to open the `.github/ci/snapshot.json` update PR.
 
-4. For local multisig CLI commands, put the same multisig values in `pear.json` and compute the multisig link:
+4. Set the same multisig values in `pear.json` and compute the multisig link:
 
 ```sh
 pear multisig link --config ./pear.json
 ```
 
-Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets.
+Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets. This link is the multisig release target, not the staged source drive printed by CI.
 
-5. Run `Build Release` with the intended `channel`, the matching `upgrade-key`, and `run-stage-multisig: true`.
-   In the same workflow run:
-   - CI builds all OS distributables.
-   - CI downloads those artifacts into `out/artifacts`.
-   - CI assembles `out/stage` from the downloaded artifacts with `pear-build`.
-   - CI stages `out/stage` into the channel drive.
+5. Run `Build Release` with:
+   - `upgrade-key`: the `pear://...` link from `pear multisig link --config ./pear.json`
+   - `run-stage-multisig`: `true`
+
+   - CI builds the OS distributables.
+   - CI downloads the `pear-*` stage artifacts into `out/artifacts`.
+   - CI builds `out/stage` with `pear-build`.
+   - CI opens `.github/ci/snapshot.json`.
+   - `pear-stage-next` stages `out/stage` into the production staging drive.
+   - `pear-stage-next` prints `Seeding <key>` and waits until a remote peer has synced the staged source drive.
    - CI closes `.github/ci/snapshot.json`.
-   - CI opens a snapshot update PR and prints the manual git commit command in the job summary.
-   - CI runs `pear-ci-multisig request`.
+   - CI creates a snapshot update PR and prints the manual git commit command in the job summary.
+   - CI creates a multisig request with `pear-ci-multisig request`.
    - CI prints the multisig request and `pear multisig sign <request>` command in the `Multisig Request` summary section.
 
-6. Merge the automated `.github/ci/snapshot.json` PR before the next staged build.
+6. Keep the staged source drive well seeded.
+   In the stage job logs, find `Seeding <key>` and seed that link:
+
+   ```sh
+   pear seed pear://<key>
+   ```
+
+   The staged source drive holds this CI build. The multisig `upgrade-key` is the release target that signers approve.
+
+7. Be sure the automated `.github/ci/snapshot.json` PR is merged before the next staged build.
    The snapshot lets future CI runs reopen the staged drive state before appending the next version.
 
-7. Keep the staged source drive seeded by release infrastructure.
-   `pear-stage-next` waits for remote peers to sync before it finishes, and `pear-ci-multisig request` validates that the source is sufficiently seeded before creating the request.
-
-8. Each signer runs:
+8. After CI finishes, open the `Build Release` run summary. Each signer copies the request from the `Multisig Request` section and runs:
 
 ```sh
 pear multisig sign <request>
 ```
 
 This flow only creates the multisig request. It does not run `multisig commit`.
-After CI finishes, open the `Build Release` run summary and copy the request from the `Multisig Request` section.
 
 ## Scripts <a name="scripts"></a>
 

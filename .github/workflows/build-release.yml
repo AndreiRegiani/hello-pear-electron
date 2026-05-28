@@ -3,9 +3,6 @@ name: Build Release
 on:
   workflow_call:
     inputs:
-      channel:
-        type: string
-        default: production
       upgrade-key:
         type: string
         default: ''
@@ -15,14 +12,6 @@ on:
 
   workflow_dispatch:
     inputs:
-      channel:
-        type: choice
-        description: Select the channel
-        default: production
-        options:
-          - internal
-          - production
-        required: true
       upgrade-key:
         description: Value for package.json upgrade field
         required: false
@@ -32,7 +21,7 @@ on:
         default: false
 
 env:
-  CHANNEL: ${{ inputs.channel || 'production' }}
+  CHANNEL: production
 
 jobs:
   build-linux-x64:
@@ -49,7 +38,7 @@ jobs:
       - uses: holepunchto/actions/make-pear-app@v1
         id: build
         with:
-          channel: ${{ env.CHANNEL }}
+          channel: production
           upgrade_key: ${{ inputs['upgrade-key'] }}
       - name: Archive stage app
         if: ${{ inputs['run-stage-multisig'] == true }}
@@ -78,7 +67,7 @@ jobs:
       - uses: holepunchto/actions/make-pear-app@v1
         id: build
         with:
-          channel: ${{ env.CHANNEL }}
+          channel: production
           upgrade_key: ${{ inputs['upgrade-key'] }}
       - name: Archive stage app
         if: ${{ inputs['run-stage-multisig'] == true }}
@@ -107,7 +96,7 @@ jobs:
       - uses: holepunchto/actions/make-pear-app@v1
         id: build
         with:
-          channel: ${{ env.CHANNEL }}
+          channel: production
           upgrade_key: ${{ inputs['upgrade-key'] }}
           macos_certificate_base64: ${{ secrets.CERTIFICATE_P12 }}
           macos_p12_password: ${{ secrets.CERTIFICATE_PASSWORD }}
@@ -143,7 +132,7 @@ jobs:
       - uses: holepunchto/actions/make-pear-app@v1
         id: build
         with:
-          channel: ${{ env.CHANNEL }}
+          channel: production
           upgrade_key: ${{ inputs['upgrade-key'] }}
           macos_certificate_base64: ${{ secrets.CERTIFICATE_P12 }}
           macos_p12_password: ${{ secrets.CERTIFICATE_PASSWORD }}
@@ -179,7 +168,7 @@ jobs:
       - uses: holepunchto/actions/make-pear-app@v1
         id: build
         with:
-          channel: ${{ env.CHANNEL }}
+          channel: production
           upgrade_key: ${{ inputs['upgrade-key'] }}
           windows_signing_method: windows_cert_pfx
           windows_cert_pfx_base64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
@@ -221,7 +210,7 @@ jobs:
       SNAPSHOT_PATH: .github/ci/snapshot.json
       STAGE_STORAGE: /tmp/pear-stage-store
       STAGE_TARGET: ./out/stage
-      STAGE_NAME: ${{ inputs.channel || 'production' }}
+      STAGE_NAME: production
     steps:
       - uses: actions/checkout@v4
 
@@ -309,23 +298,6 @@ jobs:
           PEAR_PRIMARY_KEY: ${{ secrets.PEAR_PRIMARY_KEY }}
         run: |
           set -euo pipefail
-
-          source_link="$(pear-stage-next \
-            --storage="$STAGE_STORAGE" \
-            --primary-key="$PEAR_PRIMARY_KEY" \
-            --name="$STAGE_NAME" \
-            --touch)"
-
-          {
-            echo "### Stage Source"
-            echo
-            echo "Be sure this drive is well seeded:"
-            echo
-            echo "\`pear seed $source_link\`"
-            echo
-            echo "Source link: \`$source_link\`"
-            echo
-          } | tee -a "$GITHUB_STEP_SUMMARY"
 
           pear-stage-next \
             --storage="$STAGE_STORAGE" \
