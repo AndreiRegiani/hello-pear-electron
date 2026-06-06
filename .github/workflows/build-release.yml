@@ -423,7 +423,7 @@ jobs:
           done
 
           link="$(pear-ci-multisig link "${multisig_args[@]}")"
-          request="$(pear-ci-multisig request "${multisig_args[@]}" "$SOURCE_VERLINK")"
+          request="$(pear-ci-multisig request "${multisig_args[@]}" --peer-update-timeout 60000 "$SOURCE_VERLINK")"
 
           {
             echo "### Multisig Request"
