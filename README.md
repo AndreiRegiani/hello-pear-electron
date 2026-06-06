@@ -1038,6 +1038,7 @@ Keep using the same value for future staged builds. This is the write key used t
 
 3. In `Settings -> Actions -> General -> Workflow permissions`, select `Read and write permissions` and enable `Allow GitHub Actions to create and approve pull requests`.
    The stage job uses `GITHUB_TOKEN` to open the `.github/ci/snapshot.json` update PR.
+   Without this, the stage job can push the snapshot branch but fails when creating the PR with `GitHub Actions is not permitted to create or approve pull requests`.
 
 4. Set the same multisig values in `pear.json` and compute the multisig link:
 
@@ -1063,11 +1064,25 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - CI prints the multisig request and `pear multisig sign <request>` command in the `Multisig Request` summary section.
 
 6. Keep the staged source drive well seeded.
-   In the stage job logs, find `Seeding <key>` and seed that link:
+   In the stage job logs, find `Seeding <key>` and ask the blind peers to seed that drive:
 
    ```sh
-   pear seed pear://<key>
+   blind-peering seed --drive --blind-peer-key <blind-peer-key-1> --blind-peer-key <blind-peer-key-2> <key>
    ```
+
+   Or, when using blind peer discovery:
+
+   ```sh
+   blind-peering seed --drive --auto-disc-db <discovery-db-key> --service-name <service-name> --min 2 <key>
+   ```
+
+   The trusted requester key comes from:
+
+   ```sh
+   blind-peering identity
+   ```
+
+   The blind peers must be started with that key in `--trusted-peer <key>`. `pear-ci-multisig request` checks that both the staged drive DB and blob cores are fully available from two peers. If CI fails with `SOURCE_CORE_INSUFFICIENT_PEERS (1/2 peers)`, seed the staged drive with another blind peer and rerun the workflow. For a manual fallback, seed the drive from two machines with `pear seed pear://<key>`.
 
    The staged source drive holds this CI build. The multisig `upgrade-key` is the release target that signers approve.
 
