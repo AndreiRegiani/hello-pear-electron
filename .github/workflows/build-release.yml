@@ -444,7 +444,14 @@ jobs:
             echo "Each signer runs:"
             echo
             echo "\`\`\`sh"
-            echo "pear multisig sign $request"
+            echo "pear multisig sign '$request' <signer-name>"
+            echo "\`\`\`"
+            echo
+            echo "After collecting enough responses for the quorum, verify and commit:"
+            echo
+            echo "\`\`\`sh"
+            echo "pear multisig verify --config ./pear.json '$SOURCE_VERLINK' '$request' <response-1> <response-2>"
+            echo "pear multisig commit --config ./pear.json '$SOURCE_VERLINK' '$request' <response-1> <response-2>"
             echo "\`\`\`"
             echo
             echo "This workflow only creates the request and prints the details. It does not run \`multisig commit\`."

@@ -1046,7 +1046,7 @@ Keep using the same value for future staged builds. This is the write key used t
 pear multisig link --config ./pear.json
 ```
 
-Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets. This link is the multisig release target, not the staged source drive printed by CI.
+Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets, including the public key order. This link is the multisig release target.
 
 5. Run `Build Release` with:
    - `upgrade-key`: the `pear://...` link from `pear multisig link --config ./pear.json`
@@ -1061,41 +1061,53 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - CI closes `.github/ci/snapshot.json`.
    - CI creates a snapshot update PR and prints the manual git commit command in the job summary.
    - CI creates a multisig request with `pear-ci-multisig request`.
-   - CI prints the multisig request and `pear multisig sign <request>` command in the `Multisig Request` summary section.
+   - CI prints the source verlink, multisig request, and signing command in the `Multisig Request` summary section.
 
 6. Keep the staged source drive well seeded.
-   In the stage job logs, find `Seeding <key>` and ask the blind peers to seed that drive:
+   The staged source drive contains this CI build. It is separate from the multisig release target used as the `upgrade-key`.
+
+   In the stage job logs, find `Seeding <key>`. For a manual test, seed that drive from two independent Pear instances or machines and keep both running through the final commit:
 
    ```sh
-   blind-peering seed --drive --blind-peer-key <blind-peer-key-1> --blind-peer-key <blind-peer-key-2> <key>
+   pear seed pear://<key>
+   pear seed pear://<key>
    ```
 
-   Or, when using blind peer discovery:
-
-   ```sh
-   blind-peering seed --drive --auto-disc-db <discovery-db-key> --service-name <service-name> --min 2 <key>
-   ```
-
-   The trusted requester key comes from:
-
-   ```sh
-   blind-peering identity
-   ```
-
-   The blind peers must be started with that key in `--trusted-peer <key>`. `pear-ci-multisig request` checks that both the staged drive DB and blob cores are fully available from two peers. If CI fails with `SOURCE_CORE_INSUFFICIENT_PEERS (1/2 peers)`, seed the staged drive with another blind peer and rerun the workflow. For a manual fallback, seed the drive from two machines with `pear seed pear://<key>`.
-
-   The staged source drive holds this CI build. The multisig `upgrade-key` is the release target that signers approve.
+   `pear-ci-multisig request` checks that both the staged drive DB and blob cores are fully available from two peers. If CI fails with `SOURCE_CORE_INSUFFICIENT_PEERS (1/2 peers)`, add another seeder and rerun the workflow.
 
 7. Be sure the automated `.github/ci/snapshot.json` PR is merged before the next staged build.
    The snapshot lets future CI runs reopen the staged drive state before appending the next version.
 
-8. After CI finishes, open the `Build Release` run summary. Each signer copies the request from the `Multisig Request` section and runs:
+8. After CI finishes, open the `Build Release` run summary. Each signer copies the request from the `Multisig Request` section and runs this from the project root.
+   `<signer-name>` is the local signing key name, e.g. `signer-a`.
 
-```sh
-pear multisig sign <request>
-```
+   ```sh
+   pear multisig sign <request> <signer-name>
+   ```
 
-This flow only creates the multisig request. It does not run `multisig commit`.
+   After collecting enough responses for the quorum, copy the source verlink from the `Multisig Request` section and verify and commit with the matching `pear.json` config:
+
+   ```sh
+   pear multisig verify --config ./pear.json <source-verlink> <request> <response-1> <response-2>
+   pear multisig commit --config ./pear.json <source-verlink> <request> <response-1> <response-2>
+   ```
+
+   If commit asks for the multisig target to be seeded, seed the printed multisig link from two independent Pear instances and keep them running until commit completes:
+
+   ```sh
+   pear seed pear://<multisig-link-key>
+   pear seed pear://<multisig-link-key>
+   ```
+
+   After commit, verify the release target can be read:
+
+   ```sh
+   pear dump --list <multisig-link>
+   ```
+
+   The output should include `/package.json` and the staged files under `/by-arch/...`.
+
+The CI workflow only creates the multisig request. It does not run `multisig commit`.
 
 ## Scripts <a name="scripts"></a>
 
