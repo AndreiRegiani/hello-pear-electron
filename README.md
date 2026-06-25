@@ -1037,7 +1037,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 Keep using the same value for future staged builds. This is the write key used to reopen the snapshot and append the next staged build.
 
 3. In `Settings -> Actions -> General -> Workflow permissions`, select `Read and write permissions` and enable `Allow GitHub Actions to create and approve pull requests`.
-   The stage job uses `GITHUB_TOKEN` to open the `.github/ci/snapshot.json` update PR.
+   The stage job uses `GITHUB_TOKEN` to commit `ci/snapshot.json` to `main`. If direct push to `main` fails, it opens a snapshot update PR instead.
    Without this, the stage job can push the snapshot branch but fails when creating the PR with `GitHub Actions is not permitted to create or approve pull requests`.
 
 4. Set the same multisig values in `pear.json` and compute the multisig link:
@@ -1053,20 +1053,19 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - `run-stage-multisig`: `true`
 
    - CI builds the OS distributables.
-   - CI downloads the `pear-*` stage artifacts into `out/artifacts`.
+   - `make-pear-app` uploads the named release artifacts and macOS `.app` bundle tarballs.
+   - CI downloads the macOS `.app` tarballs, Linux AppImages, and Windows MSIX into `out/artifacts`.
    - CI builds `out/stage` with `pear-build`.
-   - CI opens `.github/ci/snapshot.json`.
-   - `pear-stage-next` stages `out/stage` into the production staging drive.
-   - `pear-stage-next` prints `Seeding <key>` and waits until a remote peer has synced the staged source drive.
-   - CI closes `.github/ci/snapshot.json`.
-   - CI creates a snapshot update PR and prints the manual git commit command in the job summary.
+   - `holepunchto/actions/pear-ci` fetches `ci/snapshot.json` from `main`.
+   - `pear-ci` stages `out/stage` into the production staging drive and waits until connected remote peers have synced the staged source drive.
+   - `holepunchto/actions/pear-ci` writes the updated `ci/snapshot.json` back to `main`, or creates a PR if direct push fails.
    - CI creates a multisig request with `pear-ci-multisig request`.
    - CI prints the source verlink, multisig request, and signing command in the `Multisig Request` summary section.
 
 6. Keep the staged source drive well seeded.
    The staged source drive contains this CI build. It is separate from the multisig release target used as the `upgrade-key`.
 
-   In the stage job logs, find `Seeding <key>`. For a manual test, seed that drive from two independent Pear instances or machines and keep both running through the final commit:
+   In the stage job logs, find the staged source key printed by `pear-ci`. For a manual test, seed that drive from two independent Pear instances or machines and keep both running through the final commit:
 
    ```sh
    pear seed pear://<key>
@@ -1075,7 +1074,7 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
 
    `pear-ci-multisig request` checks that both the staged drive DB and blob cores are fully available from two peers. If CI fails with `SOURCE_CORE_INSUFFICIENT_PEERS (1/2 peers)`, add another seeder and rerun the workflow.
 
-7. Be sure the automated `.github/ci/snapshot.json` PR is merged before the next staged build.
+7. Be sure the automated `ci/snapshot.json` PR is merged before the next staged build if the action could not push directly to `main`.
    The snapshot lets future CI runs reopen the staged drive state before appending the next version.
 
 8. After CI finishes, open the `Build Release` run summary. Each signer copies the request from the `Multisig Request` section and runs this from the project root.

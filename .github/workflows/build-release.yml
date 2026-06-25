@@ -24,80 +24,109 @@ env:
   CHANNEL: production
 
 jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      name: ${{ steps.get_package_info.outputs.name }}
+      product-name: ${{ steps.get_package_info.outputs.product_name }}
+      version: ${{ steps.get_package_info.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get package info
+        id: get_package_info
+        run: |
+          {
+            echo "version=$(jq -r '.version' package.json)"
+            echo "name=$(jq -r '.name' package.json)"
+            echo "product_name=$(jq -r '.productName' package.json)"
+          } >> "$GITHUB_OUTPUT"
+
   build-linux-x64:
+    needs: [prebuild]
     timeout-minutes: 20
     permissions:
-      contents: write # to upload artifacts
+      contents: read
       packages: read
     runs-on: ubuntu-latest
     environment: release
-    outputs:
-      artifact-links: ${{ steps.build.outputs.artifact-links }}
     steps:
       - uses: actions/checkout@v4
-      - uses: holepunchto/actions/make-pear-app@v1
-        id: build
+      - uses: AndreiRegiani/actions/make-pear-app@macos-app-file
         with:
-          channel: production
+          channel: ${{ env.CHANNEL }}
           upgrade_key: ${{ inputs['upgrade-key'] }}
-      - name: Archive stage app
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        run: |
-          set -euo pipefail
-          app="$(find out/make -name '*.AppImage' -type f -print -quit)"
-          tar -czf pear-linux-x64-app.tgz -C "$(dirname "$app")" "$(basename "$app")"
-      - uses: actions/upload-artifact@v4
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        with:
-          name: pear-linux-x64-app
-          path: pear-linux-x64-app.tgz
-          if-no-files-found: error
+          linux_appimage: >-
+            ${{ format('{0}-{1}-{2}.AppImage',
+                needs.prebuild.outputs.product-name,
+                needs.prebuild.outputs.version,
+                'x64') }}
+          linux_snap: >-
+            ${{ format('{0}_{1}_{2}.snap',
+                needs.prebuild.outputs.name,
+                needs.prebuild.outputs.version,
+                'amd64') }}
+          linux_flatpak: >-
+            ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
+                needs.prebuild.outputs.name,
+                needs.prebuild.outputs.version,
+                'x64') }}
 
   build-linux-arm:
+    needs: [prebuild]
     timeout-minutes: 20
     permissions:
-      contents: write # to upload artifacts
+      contents: read
       packages: read
     runs-on: ubuntu-24.04-arm
     environment: release
-    outputs:
-      artifact-links: ${{ steps.build.outputs.artifact-links }}
     steps:
       - uses: actions/checkout@v4
-      - uses: holepunchto/actions/make-pear-app@v1
-        id: build
+      - uses: AndreiRegiani/actions/make-pear-app@macos-app-file
         with:
-          channel: production
+          channel: ${{ env.CHANNEL }}
           upgrade_key: ${{ inputs['upgrade-key'] }}
-      - name: Archive stage app
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        run: |
-          set -euo pipefail
-          app="$(find out/make -name '*.AppImage' -type f -print -quit)"
-          tar -czf pear-linux-arm64-app.tgz -C "$(dirname "$app")" "$(basename "$app")"
-      - uses: actions/upload-artifact@v4
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        with:
-          name: pear-linux-arm64-app
-          path: pear-linux-arm64-app.tgz
-          if-no-files-found: error
+          linux_appimage: >-
+            ${{ format('{0}-{1}-{2}.AppImage',
+                needs.prebuild.outputs.product-name,
+                needs.prebuild.outputs.version,
+                'arm64') }}
+          linux_snap: >-
+            ${{ format('{0}_{1}_{2}.snap',
+                needs.prebuild.outputs.name,
+                needs.prebuild.outputs.version,
+                'arm64') }}
+          linux_flatpak: >-
+            ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
+                needs.prebuild.outputs.name,
+                needs.prebuild.outputs.version,
+                'arm64') }}
 
   build-macos:
+    needs: [prebuild]
     timeout-minutes: 20
     permissions:
-      contents: write # to upload artifacts
+      contents: read
       packages: read
     runs-on: macos-latest
     environment: release
-    outputs:
-      artifact-links: ${{ steps.build.outputs.artifact-links }}
     steps:
       - uses: actions/checkout@v4
-      - uses: holepunchto/actions/make-pear-app@v1
-        id: build
+      - uses: AndreiRegiani/actions/make-pear-app@macos-app-file
         with:
-          channel: production
+          channel: ${{ env.CHANNEL }}
           upgrade_key: ${{ inputs['upgrade-key'] }}
+          macos_dmg: >-
+            ${{ format('{0}-{1}-{2}.dmg',
+                needs.prebuild.outputs.product-name,
+                needs.prebuild.outputs.version,
+                'arm64') }}
+          macos_app: >-
+            ${{ format('{0}-{1}-{2}.app.tgz',
+                needs.prebuild.outputs.product-name,
+                needs.prebuild.outputs.version,
+                'arm64') }}
           macos_certificate_base64: ${{ secrets.CERTIFICATE_P12 }}
           macos_p12_password: ${{ secrets.CERTIFICATE_PASSWORD }}
           macos_codesign_identity: ${{ secrets.MAC_CODESIGN_IDENTITY }}
@@ -105,35 +134,31 @@ jobs:
           macos_apple_id: ${{ secrets.APPLE_ID }}
           macos_apple_password: ${{ secrets.APPLE_PASSWORD }}
           macos_apple_team_id: ${{ secrets.APPLE_TEAM_ID }}
-      - name: Archive stage app
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        run: |
-          set -euo pipefail
-          app="$(find out -path '*darwin-arm64*' -name '*.app' -type d -print -quit)"
-          tar -czf pear-darwin-arm64-app.tgz -C "$(dirname "$app")" "$(basename "$app")"
-      - uses: actions/upload-artifact@v4
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        with:
-          name: pear-darwin-arm64-app
-          path: pear-darwin-arm64-app.tgz
-          if-no-files-found: error
 
   build-macos-x64:
+    needs: [prebuild]
     timeout-minutes: 20
     permissions:
-      contents: write # to upload artifacts
+      contents: read
       packages: read
     runs-on: macos-26-intel
     environment: release
-    outputs:
-      artifact-links: ${{ steps.build.outputs.artifact-links }}
     steps:
       - uses: actions/checkout@v4
-      - uses: holepunchto/actions/make-pear-app@v1
-        id: build
+      - uses: AndreiRegiani/actions/make-pear-app@macos-app-file
         with:
-          channel: production
+          channel: ${{ env.CHANNEL }}
           upgrade_key: ${{ inputs['upgrade-key'] }}
+          macos_dmg: >-
+            ${{ format('{0}-{1}-{2}.dmg',
+                needs.prebuild.outputs.product-name,
+                needs.prebuild.outputs.version,
+                'x64') }}
+          macos_app: >-
+            ${{ format('{0}-{1}-{2}.app.tgz',
+                needs.prebuild.outputs.product-name,
+                needs.prebuild.outputs.version,
+                'x64') }}
           macos_certificate_base64: ${{ secrets.CERTIFICATE_P12 }}
           macos_p12_password: ${{ secrets.CERTIFICATE_PASSWORD }}
           macos_codesign_identity: ${{ secrets.MAC_CODESIGN_IDENTITY }}
@@ -141,54 +166,28 @@ jobs:
           macos_apple_id: ${{ secrets.APPLE_ID }}
           macos_apple_password: ${{ secrets.APPLE_PASSWORD }}
           macos_apple_team_id: ${{ secrets.APPLE_TEAM_ID }}
-      - name: Archive stage app
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        run: |
-          set -euo pipefail
-          app="$(find out -path '*darwin-x64*' -name '*.app' -type d -print -quit)"
-          tar -czf pear-darwin-x64-app.tgz -C "$(dirname "$app")" "$(basename "$app")"
-      - uses: actions/upload-artifact@v4
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        with:
-          name: pear-darwin-x64-app
-          path: pear-darwin-x64-app.tgz
-          if-no-files-found: error
 
   build-win32:
+    needs: [prebuild]
     timeout-minutes: 20
     permissions:
-      contents: write # to upload artifacts
+      contents: read
       packages: read
     runs-on: windows-latest
     environment: release
-    outputs:
-      artifact-links: ${{ steps.build.outputs.artifact-links }}
     steps:
       - uses: actions/checkout@v4
-      - uses: holepunchto/actions/make-pear-app@v1
-        id: build
+      - uses: AndreiRegiani/actions/make-pear-app@macos-app-file
         with:
-          channel: production
+          channel: ${{ env.CHANNEL }}
           upgrade_key: ${{ inputs['upgrade-key'] }}
-          windows_signing_method: windows_cert_pfx
+          windows_msix: ${{ format('{0}.msix', needs.prebuild.outputs.product-name) }}
+          windows_signing_method: cert_pfx
           windows_cert_pfx_base64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
           windows_cert_password: ${{ secrets.WINDOWS_CERT_PASSWORD }}
-      - name: Archive stage app
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          app="$(find out -path '*win32-x64*' -name '*.msix' -type f -print -quit)"
-          tar -czf pear-win32-x64-app.tgz -C "$(dirname "$app")" "$(basename "$app")"
-      - uses: actions/upload-artifact@v4
-        if: ${{ inputs['run-stage-multisig'] == true }}
-        with:
-          name: pear-win32-x64-app
-          path: pear-win32-x64-app.tgz
-          if-no-files-found: error
 
   stage:
-    needs: [build-linux-x64, build-linux-arm, build-macos, build-macos-x64, build-win32]
+    needs: [prebuild, build-linux-x64, build-linux-arm, build-macos, build-macos-x64, build-win32]
     if: >-
       ${{
         !cancelled()
@@ -202,13 +201,12 @@ jobs:
       }}
     timeout-minutes: 60
     permissions:
+      actions: read
       contents: write
       pull-requests: write
     runs-on: macos-latest
     environment: release
     env:
-      SNAPSHOT_PATH: .github/ci/snapshot.json
-      STAGE_STORAGE: /tmp/pear-stage-store
       STAGE_TARGET: ./out/stage
       STAGE_NAME: production
     steps:
@@ -221,13 +219,21 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          pattern: pear-*
+          pattern: '*.app.tgz'
+          path: out/artifacts
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*.AppImage'
+          path: out/artifacts
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*.msix'
           path: out/artifacts
 
       - name: Install staging tools
-        run: |
-          npm install --no-save --no-package-lock corestore-snapshot pear-build pear-stage-next pear-ci-multisig
-          echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
+        run: npm install -g pear-build pear-ci-multisig corestore hyperdrive pear-link
 
       - name: Build stage directory
         env:
@@ -235,39 +241,41 @@ jobs:
         run: |
           set -euo pipefail
 
-          app_name="$(node -p "require('./package.json').productName || require('./package.json').name")"
+          app_name="$(jq -r '.productName // .name' package.json)"
           package_json="$RUNNER_TEMP/package.json"
+          artifact_dir="out/artifacts"
           extract_dir="$RUNNER_TEMP/stage-artifacts"
           mkdir -p "$extract_dir"
           while IFS= read -r -d '' archive; do
             dest="$extract_dir/$(basename "$archive" .tgz)"
             mkdir -p "$dest"
             tar -xzf "$archive" -C "$dest"
-          done < <(find out/artifacts -name '*.tgz' -type f -print0)
+          done < <(find "$artifact_dir" -name '*.tgz' -type f -print0)
 
-          node <<'NODE'
-          const fs = require('fs')
-          const pkg = require('./package.json')
-          if (process.env.UPGRADE_KEY) pkg.upgrade = process.env.UPGRADE_KEY
-          fs.writeFileSync(process.env.RUNNER_TEMP + '/package.json', JSON.stringify(pkg, null, 2) + '\n')
-          NODE
+          if [[ -n "$UPGRADE_KEY" ]]; then
+            jq --arg upgrade "$UPGRADE_KEY" '.upgrade = $upgrade' package.json > "$package_json"
+          else
+            jq '.' package.json > "$package_json"
+          fi
 
-          darwin_arm64_app="$(find "$extract_dir" -path "*darwin-arm64*" -name "$app_name.app" -type d -print -quit)"
-          darwin_x64_app="$(find "$extract_dir" -path "*darwin-x64*" -name "$app_name.app" -type d -print -quit)"
-          linux_arm64_src="$(find "$extract_dir" -path "*linux-arm64*" -name "$app_name*.AppImage" -type f -print -quit)"
-          linux_x64_src="$(find "$extract_dir" -path "*linux-x64*" -name "$app_name*.AppImage" -type f -print -quit)"
-          win32_x64_app="$(find "$extract_dir" -path "*win32-x64*" -name "$app_name.msix" -type f -print -quit)"
+          darwin_arm64_app="$(find "$extract_dir" -path "*arm64*" -name "$app_name.app" -type d -print -quit)"
+          darwin_x64_app="$(find "$extract_dir" -path "*x64*" -name "$app_name.app" -type d -print -quit)"
+          linux_arm64_src="$(find "$artifact_dir" "$extract_dir" -path "*arm64*" -name "$app_name*.AppImage" -type f -print -quit)"
+          linux_x64_src="$(find "$artifact_dir" "$extract_dir" -path "*x64*" -name "$app_name*.AppImage" -type f -print -quit)"
+          win32_x64_app="$(find "$artifact_dir" "$extract_dir" -name "$app_name.msix" -type f -print -quit)"
 
           if [[ -z "$darwin_arm64_app" || -z "$darwin_x64_app" || -z "$linux_arm64_src" || -z "$linux_x64_src" || -z "$win32_x64_app" ]]; then
             echo "Missing one or more Pear build artifacts" >&2
-            find "$extract_dir" -maxdepth 6 -print | sort >&2
+            find "$artifact_dir" "$extract_dir" -maxdepth 6 -print | sort >&2
             exit 1
           fi
 
-          linux_arm64_app="$extract_dir/pear-linux-arm64-app/$app_name.AppImage"
-          linux_x64_app="$extract_dir/pear-linux-x64-app/$app_name.AppImage"
-          if [[ "$linux_arm64_src" != "$linux_arm64_app" ]]; then cp "$linux_arm64_src" "$linux_arm64_app"; fi
-          if [[ "$linux_x64_src" != "$linux_x64_app" ]]; then cp "$linux_x64_src" "$linux_x64_app"; fi
+          linux_arm64_app="$RUNNER_TEMP/pear-build/linux-arm64/$app_name.AppImage"
+          linux_x64_app="$RUNNER_TEMP/pear-build/linux-x64/$app_name.AppImage"
+          mkdir -p "$(dirname "$linux_arm64_app")" "$(dirname "$linux_x64_app")"
+          cp "$linux_arm64_src" "$linux_arm64_app"
+          cp "$linux_x64_src" "$linux_x64_app"
+          chmod +x "$linux_arm64_app" "$linux_x64_app"
 
           rm -rf "$STAGE_TARGET"
           pear-build \
@@ -281,37 +289,29 @@ jobs:
 
           find "$STAGE_TARGET" -type f | sort
 
-      - name: Open stage snapshot
-        env:
-          PEAR_PRIMARY_KEY: ${{ secrets.PEAR_PRIMARY_KEY }}
-        run: >-
-          corestore-snapshot
-          --open
-          --snapshot="$SNAPSHOT_PATH"
-          --storage="$STAGE_STORAGE"
-          --primary-key="$PEAR_PRIMARY_KEY"
+      - uses: holepunchto/actions/pear-ci@v1
+        id: pear-ci
+        with:
+          namespace: ${{ env.STAGE_NAME }}
+          primary-key: ${{ secrets.PEAR_PRIMARY_KEY }}
+          target: ${{ env.STAGE_TARGET }}
 
-      - name: Stage next
+      - name: Resolve source verlink
         id: stage
-        timeout-minutes: 60
         env:
           PEAR_PRIMARY_KEY: ${{ secrets.PEAR_PRIMARY_KEY }}
         run: |
           set -euo pipefail
 
-          pear-stage-next \
-            --storage="$STAGE_STORAGE" \
-            --target="$STAGE_TARGET" \
-            --primary-key="$PEAR_PRIMARY_KEY" \
-            --name="$STAGE_NAME"
-
+          node_path="$(npm root -g)"
+          export NODE_PATH="$node_path"
           verlink="$(node <<'NODE'
           const Corestore = require('corestore')
           const Hyperdrive = require('hyperdrive')
           const plink = require('pear-link')
 
           async function main () {
-            const store = new Corestore(process.env.STAGE_STORAGE, {
+            const store = new Corestore('/tmp/store', {
               primaryKey: Buffer.from(process.env.PEAR_PRIMARY_KEY, 'hex'),
               unsafe: true
             })
@@ -341,66 +341,6 @@ jobs:
 
           echo "$verlink"
           echo "source-verlink=$verlink" >> "$GITHUB_OUTPUT"
-
-      - name: Close stage snapshot
-        env:
-          PEAR_PRIMARY_KEY: ${{ secrets.PEAR_PRIMARY_KEY }}
-        run: >-
-          corestore-snapshot
-          --close
-          --snapshot="$SNAPSHOT_PATH"
-          --storage="$STAGE_STORAGE"
-          --primary-key="$PEAR_PRIMARY_KEY"
-
-      - name: Create snapshot update PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          branch="ci/snapshot-${{ github.run_id }}"
-          snapshot="$RUNNER_TEMP/snapshot.json"
-
-          cp "$SNAPSHOT_PATH" "$snapshot"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git checkout -B "$branch" origin/main
-
-          mkdir -p "$(dirname "$SNAPSHOT_PATH")"
-          cp "$snapshot" "$SNAPSHOT_PATH"
-          git add "$SNAPSHOT_PATH"
-
-          {
-            echo "### Stage Snapshot"
-            echo
-            echo "Snapshot file: \`$SNAPSHOT_PATH\`"
-            echo
-            echo "Manual commit command:"
-            echo
-            echo "\`\`\`sh"
-            echo "git add $SNAPSHOT_PATH"
-            echo "git commit -m \"ci: update stage snapshot [run ${{ github.run_number }}]\""
-            echo "\`\`\`"
-            echo
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          if git diff --cached --quiet; then
-            echo "Snapshot unchanged, skipping PR" | tee -a "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          git commit -m "ci: update stage snapshot [run ${{ github.run_number }}]"
-          git push --force-with-lease origin "$branch"
-
-          pr_url="$(gh pr create \
-            --title "ci: update stage snapshot" \
-            --body "Automated stage snapshot update from workflow run #${{ github.run_number }}." \
-            --base "main" \
-            --head "$branch")"
-
-          echo "Snapshot PR: $pr_url" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Create multisig request
         env:
