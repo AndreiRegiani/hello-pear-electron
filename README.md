@@ -1069,7 +1069,6 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
 
    ```sh
    pear seed pear://<key>
-   pear seed pear://<key>
    ```
 
    `pear-ci-multisig request` checks that both the staged drive DB and blob cores are fully available from two peers. If CI fails with `SOURCE_CORE_INSUFFICIENT_PEERS (1/2 peers)`, add another seeder and rerun the workflow.
@@ -1094,7 +1093,6 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    If commit asks for the multisig target to be seeded, seed the printed multisig link from two independent Pear instances and keep them running until commit completes:
 
    ```sh
-   pear seed pear://<multisig-link-key>
    pear seed pear://<multisig-link-key>
    ```
 
