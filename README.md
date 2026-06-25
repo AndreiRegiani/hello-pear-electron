@@ -1053,7 +1053,7 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - `run-stage-multisig`: `true`
 
    - CI builds the OS distributables.
-   - `make-pear-app` uploads the named release artifacts and macOS `.app` bundle tarballs.
+   - `make-pear-app` uploads the named release artifacts.
    - CI downloads the macOS `.app` tarballs, Linux AppImages, and Windows MSIX into `out/artifacts`.
    - CI builds `out/stage` with `pear-build`.
    - `holepunchto/actions/pear-ci` fetches `ci/snapshot.json` from `main`.
@@ -1063,9 +1063,9 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - CI prints the source verlink, multisig request, and signing command in the `Multisig Request` summary section.
 
 6. Keep the staged source drive well seeded.
-   The staged source drive contains this CI build. It is separate from the multisig release target used as the `upgrade-key`.
+   The staged source drive contains this CI build, which is different from the multisig release target used as the `upgrade-key`.
 
-   In the stage job logs, find the staged source key printed by `pear-ci`. For a manual test, seed that drive from two independent Pear instances or machines and keep both running through the final commit:
+   In the stage job logs find the staged source key printed by `pear-ci`. Seed that drive from two independent Pear instances or machines and keep both running through the final commit:
 
    ```sh
    pear seed pear://<key>
@@ -1104,7 +1104,7 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
 
    The output should include `/package.json` and the staged files under `/by-arch/...`.
 
-The CI workflow only creates the multisig request. It does not run `multisig commit`.
+Note: CI workflow only creates the multisig request, it does not run the final `multisig commit` which is done manually by a signer.
 
 ## Scripts <a name="scripts"></a>
 
