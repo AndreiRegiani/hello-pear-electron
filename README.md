@@ -1016,8 +1016,7 @@ Create a GitHub environment (Settings -> Environments) named `release`. Run the 
 
 The `Build Release` workflow can stage a completed build and create a multisig signing request in the same run.
 
-1. Use the `release` GitHub environment.
-   This repository stages the `production` Pear channel.
+1. Create a GitHub environment named `release`.
 
 2. Add these environment secrets to the `release` environment:
 
@@ -1049,12 +1048,10 @@ pear multisig link --config ./pear.json
 Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets, including the public key order. This link is the multisig release target.
 
 5. Run `Build Release` with:
-   - `upgrade-key`: the `pear://...` link from `pear multisig link --config ./pear.json`
-   - `run-stage-multisig`: `true`
-
+   - `upgrade-key`: the `pear://...` link from `pear multisig link --config ./pear.json` and `run-stage-multisig`: `true`
    - CI builds the OS distributables.
-   - `make-pear-app` uploads the named release artifacts.
-   - CI downloads the macOS `.app` tarballs, Linux AppImages, and Windows MSIX into `out/artifacts`.
+   - `make-pear-app` uploads the release artifacts.
+   - CI downloads artifacts like macOS `.app`, Linux AppImages, and Windows MSIX into `out/artifacts`.
    - CI builds `out/stage` with `pear-build`.
    - `holepunchto/actions/pear-ci` fetches `ci/snapshot.json` from `main`.
    - `pear-ci` stages `out/stage` into the production staging drive and waits until connected remote peers have synced the staged source drive.
@@ -1063,7 +1060,7 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - CI prints the source verlink, multisig request, and signing command in the `Multisig Request` summary section.
 
 6. Keep the staged source drive well seeded.
-   The staged source drive contains this CI build, which is different from the multisig release target used as the `upgrade-key`.
+   The staged source drive contains this CI build. Note: this is a different link not the multisig release target used as the `upgrade-key`.
 
    In the stage job logs find the staged source key printed by `pear-ci`. Seed that drive from two independent Pear instances or machines and keep both running through the final commit:
 
