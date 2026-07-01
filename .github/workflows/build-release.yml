@@ -68,16 +68,16 @@ jobs:
                 needs.prebuild.outputs.package-name,
                 needs.prebuild.outputs.version,
                 'x64') }}
-          linux_snap: >-
-            ${{ format('{0}_{1}_{2}.snap',
-                needs.prebuild.outputs.package-name-lower,
-                needs.prebuild.outputs.version,
-                'amd64') }}
-          linux_flatpak: >-
-            ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
-                needs.prebuild.outputs.package-name-lower,
-                needs.prebuild.outputs.version,
-                'x64') }}
+          # linux_snap: >-
+          #   ${{ format('{0}_{1}_{2}.snap',
+          #       needs.prebuild.outputs.package-name-lower,
+          #       needs.prebuild.outputs.version,
+          #       'amd64') }}
+          # linux_flatpak: >-
+          #   ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
+          #       needs.prebuild.outputs.package-name-lower,
+          #       needs.prebuild.outputs.version,
+          #       'x64') }}
 
   build-linux-arm:
     needs: [prebuild]
@@ -99,16 +99,16 @@ jobs:
                 needs.prebuild.outputs.package-name,
                 needs.prebuild.outputs.version,
                 'arm64') }}
-          linux_snap: >-
-            ${{ format('{0}_{1}_{2}.snap',
-                needs.prebuild.outputs.package-name-lower,
-                needs.prebuild.outputs.version,
-                'arm64') }}
-          linux_flatpak: >-
-            ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
-                needs.prebuild.outputs.package-name-lower,
-                needs.prebuild.outputs.version,
-                'arm64') }}
+          # linux_snap: >-
+          #   ${{ format('{0}_{1}_{2}.snap',
+          #       needs.prebuild.outputs.package-name-lower,
+          #       needs.prebuild.outputs.version,
+          #       'arm64') }}
+          # linux_flatpak: >-
+          #   ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
+          #       needs.prebuild.outputs.package-name-lower,
+          #       needs.prebuild.outputs.version,
+          #       'arm64') }}
 
   build-macos:
     needs: [prebuild]
@@ -357,14 +357,14 @@ jobs:
       - name: Create multisig request
         env:
           SOURCE_VERLINK: ${{ steps.stage.outputs.source-verlink }}
-          MULTISIG_QUORUM: ${{ secrets.MULTISIG_QUORUM }}
-          MULTISIG_NAMESPACE: ${{ secrets.MULTISIG_NAMESPACE }}
-          MULTISIG_PUBKEYS: ${{ secrets.MULTISIG_PUBKEYS }}
+          MULTISIG_QUORUM: ${{ vars.MULTISIG_QUORUM }}
+          MULTISIG_NAMESPACE: ${{ vars.MULTISIG_NAMESPACE }}
+          MULTISIG_PUBKEYS: ${{ vars.MULTISIG_PUBKEYS }}
         run: |
           set -euo pipefail
 
           if [[ -z "$MULTISIG_QUORUM" || -z "$MULTISIG_NAMESPACE" || -z "$MULTISIG_PUBKEYS" ]]; then
-            echo "Missing MULTISIG_QUORUM, MULTISIG_NAMESPACE, or MULTISIG_PUBKEYS secrets" >&2
+            echo "Missing MULTISIG_QUORUM, MULTISIG_NAMESPACE, or MULTISIG_PUBKEYS variables" >&2
             exit 1
           fi
 

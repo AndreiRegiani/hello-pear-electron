@@ -1016,18 +1016,15 @@ Create a GitHub environment (Settings -> Environments) named `release`. Run the 
 
 ### CI Multisig <a name="ci-multisig"></a>
 
-The `Build Release` workflow can stage a completed build and create a multisig signing request in the same run.
+The `Build Release` workflow can stage build artifacts and create a multisig signing request in the same run.
 
 1. Create a GitHub environment named `release`.
 
-2. Add these environment secrets to the `release` environment:
+2. Configure one secret to the `release` environment:
 
-| Secret               | Notes                                                        |
-| -------------------- | ------------------------------------------------------------ |
-| `PEAR_PRIMARY_KEY`   | Hex-encoded primary key for the CI-owned staged source drive |
-| `MULTISIG_QUORUM`    | Required signature count, e.g. `2`                           |
-| `MULTISIG_PUBKEYS`   | Space-separated signer public keys                           |
-| `MULTISIG_NAMESPACE` | Multisig namespace, e.g. `holepunchto/hello-pear-electron`   |
+| Secret             | Notes                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| `PEAR_PRIMARY_KEY` | Hex-encoded primary key for the CI-owned staged source drive |
 
 Generate `PEAR_PRIMARY_KEY` once and save it as a `release` environment secret:
 
@@ -1035,7 +1032,17 @@ Generate `PEAR_PRIMARY_KEY` once and save it as a `release` environment secret:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Keep using the same value for future staged builds. `PEAR_PRIMARY_KEY` is the persistent write key for the CI-owned staged source drive. Changing it creates a different staged source drive and breaks continuity with the existing `ci/snapshot.json`, so rotate it only when intentionally starting a new staged source drive or recovering from a corrupted/conflicted one.
+Keep this value a secret and use the same value for future staged builds. `PEAR_PRIMARY_KEY` is the persistent write key for the CI-owned staged source drive. Changing it creates a different staged source drive and breaks continuity with the existing `ci/snapshot.json`, so rotate it only when intentionally starting a new staged source drive or recovering from a corrupted/conflicted one.
+
+Configure three plain variables (not secrets) to the `release` environment:
+
+| Variable             | Notes                                                      |
+| -------------------- | ---------------------------------------------------------- |
+| `MULTISIG_QUORUM`    | Required signature count, e.g. `2`                         |
+| `MULTISIG_PUBKEYS`   | Space-separated signer public keys                         |
+| `MULTISIG_NAMESPACE` | Multisig namespace, e.g. `holepunchto/hello-pear-electron` |
+
+Note: public keys order matters, changing the order changes the output.
 
 3. In `Settings -> Actions -> General -> Workflow permissions`, select `Read and write permissions` and enable `Allow GitHub Actions to create and approve pull requests`.
    The stage job uses `GITHUB_TOKEN` to commit `ci/snapshot.json` to `main`. If direct push to `main` fails, it opens a snapshot update PR instead.
@@ -1047,7 +1054,7 @@ Keep using the same value for future staged builds. `PEAR_PRIMARY_KEY` is the pe
 pear multisig link --config ./pear.json
 ```
 
-Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets, including the public key order. This link is the multisig release target.
+Use the printed `pear://...` link as the `Build Release` `upgrade-key`, or leave `upgrade-key` empty if the same link is already set in `package.json`.
 
 5. For an OTA release, bump the version before running CI and push the changed files:
 
