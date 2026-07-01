@@ -1049,7 +1049,13 @@ pear multisig link --config ./pear.json
 
 Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pear.json` `publicKeys`, `namespace`, and `quorum` values must match the GitHub secrets, including the public key order. This link is the multisig release target.
 
-5. Run `Build Release` with:
+5. For an OTA release, bump the version before running CI and push the changed files:
+
+```sh
+npm version minor --no-git-tag-version
+```
+
+6. Run `Build Release` with:
    - `upgrade-key`: the `pear://...` link from `pear multisig link --config ./pear.json` and `run-stage-multisig`: `true`
    - CI builds the OS distributables.
    - `make-pear-app` uploads the release artifacts.
@@ -1061,7 +1067,7 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
    - CI creates a multisig request with `pear-ci-multisig request`.
    - CI prints the source verlink, multisig request, and signing command in the `Multisig Request` summary section.
 
-6. Keep the staged source drive well seeded.
+7. Keep the staged source drive well seeded.
    The staged source drive contains this CI build. Note: this is a different link not the multisig release target used as the `upgrade-key`.
 
    In the stage job logs find the staged source key printed by `pear-ci`. Seed that drive from two independent Pear instances or machines and keep both running through the final commit:
@@ -1072,10 +1078,10 @@ Use the printed `pear://...` link as the `Build Release` `upgrade-key`. The `pea
 
    `pear-ci-multisig request` checks that both the staged drive DB and blob cores are fully available from two peers. If CI fails with `SOURCE_CORE_INSUFFICIENT_PEERS (1/2 peers)`, add another seeder and rerun the workflow.
 
-7. Be sure the automated `ci/snapshot.json` PR is merged before the next staged build if the action could not push directly to `main`.
+8. Be sure the automated `ci/snapshot.json` PR is merged before the next staged build if the action could not push directly to `main`.
    The snapshot lets future CI runs reopen the staged drive state before appending the next version.
 
-8. After CI finishes, open the `Build Release` run summary. Each signer copies the request from the `Multisig Request` section and runs this from the project root.
+9. After CI finishes, open the `Build Release` run summary. Each signer copies the request from the `Multisig Request` section and runs this from the project root.
    `<signer-name>` is the local signing key name, e.g. `signer-a`.
 
    ```sh
