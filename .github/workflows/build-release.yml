@@ -68,16 +68,16 @@ jobs:
                 needs.prebuild.outputs.package-name,
                 needs.prebuild.outputs.version,
                 'x64') }}
-          # linux_snap: >-
-          #   ${{ format('{0}_{1}_{2}.snap',
-          #       needs.prebuild.outputs.package-name-lower,
-          #       needs.prebuild.outputs.version,
-          #       'amd64') }}
-          # linux_flatpak: >-
-          #   ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
-          #       needs.prebuild.outputs.package-name-lower,
-          #       needs.prebuild.outputs.version,
-          #       'x64') }}
+          linux_snap: >-
+            ${{ format('{0}_{1}_{2}.snap',
+                needs.prebuild.outputs.package-name-lower,
+                needs.prebuild.outputs.version,
+                'amd64') }}
+          linux_flatpak: >-
+            ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
+                needs.prebuild.outputs.package-name-lower,
+                needs.prebuild.outputs.version,
+                'x64') }}
 
   build-linux-arm:
     needs: [prebuild]
@@ -99,16 +99,16 @@ jobs:
                 needs.prebuild.outputs.package-name,
                 needs.prebuild.outputs.version,
                 'arm64') }}
-          # linux_snap: >-
-          #   ${{ format('{0}_{1}_{2}.snap',
-          #       needs.prebuild.outputs.package-name-lower,
-          #       needs.prebuild.outputs.version,
-          #       'arm64') }}
-          # linux_flatpak: >-
-          #   ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
-          #       needs.prebuild.outputs.package-name-lower,
-          #       needs.prebuild.outputs.version,
-          #       'arm64') }}
+          linux_snap: >-
+            ${{ format('{0}_{1}_{2}.snap',
+                needs.prebuild.outputs.package-name-lower,
+                needs.prebuild.outputs.version,
+                'arm64') }}
+          linux_flatpak: >-
+            ${{ format('{0}_{1}_{2}_flatpak.tar.gz',
+                needs.prebuild.outputs.package-name-lower,
+                needs.prebuild.outputs.version,
+                'arm64') }}
 
   build-macos:
     needs: [prebuild]
