@@ -1035,7 +1035,7 @@ Generate `PEAR_PRIMARY_KEY` once and save it as a `release` environment secret:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Keep using the same value for future staged builds. This is the write key used to reopen the snapshot and append the next staged build.
+Keep using the same value for future staged builds. `PEAR_PRIMARY_KEY` is the persistent write key for the CI-owned staged source drive. Changing it creates a different staged source drive and breaks continuity with the existing `ci/snapshot.json`, so rotate it only when intentionally starting a new staged source drive or recovering from a corrupted/conflicted one.
 
 3. In `Settings -> Actions -> General -> Workflow permissions`, select `Read and write permissions` and enable `Allow GitHub Actions to create and approve pull requests`.
    The stage job uses `GITHUB_TOKEN` to commit `ci/snapshot.json` to `main`. If direct push to `main` fails, it opens a snapshot update PR instead.
@@ -1266,6 +1266,10 @@ Runs: `electron-forge make`
 ---
 
 ## Troubleshooting <a name="troubleshooting"></a>
+
+### CI stage fails with Hypercore conflict or `SESSION_CLOSED` <a name="ci-stage-conflict-session-closed"></a>
+
+If `pear-ci` logs `[hypercore] conflict detected` or `SESSION_CLOSED: Cannot append to a closed session` during staging, the CI staged source drive is conflicted or was reused incorrectly. Recovery is to start a new staged source drive: generate a fresh `PEAR_PRIMARY_KEY`, replace the `release` environment secret, keep `ci/snapshot.json` as `[]`, and rerun the workflow. Do not rotate `PEAR_PRIMARY_KEY` for normal releases; it is the persistent write key for appending future staged builds to the same CI source drive.
 
 ### App did not update <a name="app-did-not-update"></a>
 
