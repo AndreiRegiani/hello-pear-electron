@@ -194,7 +194,7 @@ jobs:
           windows_msix: >-
             ${{ format('{0}.msix',
                 needs.prebuild.outputs.package-name) }}
-          windows_signing_method: windows_cert_pfx
+          windows_signing_method: cert_pfx
           windows_cert_pfx_base64: ${{ secrets.WINDOWS_CERT_PFX_BASE64 }}
           windows_cert_password: ${{ secrets.WINDOWS_CERT_PASSWORD }}
 
